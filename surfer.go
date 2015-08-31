@@ -34,6 +34,25 @@ var (
 		[]string{"channel", "frequency_hz", "modulation"},
 	)
 
+	codewordsUnerroredMetric = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "codewords_unerrored",
+		Help: "Unerrored codeword count",
+	},
+		[]string{"channel"},
+	)
+	codewordsCorrectableMetric = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "codewords_correctable",
+		Help: "Correctable codeword count",
+	},
+		[]string{"channel"},
+	)
+	codewordsUncorrectableMetric = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "codewords_uncorrectable",
+		Help: "Uncorrectable codeword count",
+	},
+		[]string{"channel"},
+	)
+
 	upstreamSymbolRateMetric = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "upstream_symbol_rate",
 		Help: "Upstream symbol rate in sym/sec",
@@ -53,6 +72,9 @@ func init() {
 	prometheus.MustRegister(downstreamPowerLevelMetric)
 	prometheus.MustRegister(upstreamSymbolRateMetric)
 	prometheus.MustRegister(upstreamPowerLevelMetric)
+	prometheus.MustRegister(codewordsUnerroredMetric)
+	prometheus.MustRegister(codewordsCorrectableMetric)
+	prometheus.MustRegister(codewordsUncorrectableMetric)
 }
 
 func getText(n *html.Node) string {
@@ -70,7 +92,7 @@ func getText(n *html.Node) string {
 }
 
 func updateDownstream(n *html.Node) {
-	glog.Infoln("Updating downstream table")
+	glog.V(2).Infoln("Updating downstream table")
 	type stat struct {
 		frequency  string
 		snr        float64
@@ -126,16 +148,16 @@ func updateDownstream(n *html.Node) {
 			glog.Fatalf("Unhandled %d row in downstream table", row)
 		}
 	}
-	glog.Infof("updateDownstream data:")
+	glog.V(2).Infof("updateDownstream data:")
 	for k, v := range stats {
-		glog.Infof("  %v: %v", k, v)
+		glog.V(2).Infof("  %v: %v", k, v)
 		downstreamSNRMetric.WithLabelValues(k, v.frequency, v.modulation).Set(v.snr)
 		downstreamPowerLevelMetric.WithLabelValues(k, v.frequency, v.modulation).Set(v.powerLevel)
 	}
 }
 
 func updateUpstream(n *html.Node) {
-	glog.Infoln("Updating upstream table")
+	glog.V(2).Infoln("Updating upstream table")
 	type stat struct {
 		frequency      string
 		rangingService string
@@ -194,19 +216,73 @@ func updateUpstream(n *html.Node) {
 				stats[ids[i]].rangingStatus = getText(td)
 			}
 		default:
-			glog.Fatalf("Unhandled %d row in downstream table", row)
+			glog.Fatalf("Unhandled %d row in upstream table", row)
 		}
 	}
-	glog.Infof("updateUpstream data:")
+	glog.V(2).Infof("updateUpstream data:")
 	for k, v := range stats {
-		glog.Infof("  %v: %v", k, v)
+		glog.V(2).Infof("  %v: %v", k, v)
 		upstreamSymbolRateMetric.WithLabelValues(k, v.frequency, v.modulation, v.rangingService, v.rangingStatus).Set(v.symbolRate)
 		upstreamPowerLevelMetric.WithLabelValues(k, v.frequency, v.modulation, v.rangingService, v.rangingStatus).Set(v.powerLevel)
 	}
 }
 
-func updateSignalStats(z *html.Tokenizer) {
-	glog.Infoln("Updating signal stats table")
+func updateSignalStats(n *html.Node) {
+	glog.V(2).Infoln("Updating signal stats table")
+	type stat struct {
+		unerrored     float64
+		correctable   float64
+		uncorrectable float64
+	}
+	stats := map[string]*stat{}
+	var ids []string
+	for row, tr := range cascadia.MustCompile("tr").MatchAll(n)[1:] {
+		switch row {
+		case 0:
+			// ID
+			for _, td := range cascadia.MustCompile("td").MatchAll(tr)[1:] {
+				id := getText(td)
+				ids = append(ids, id)
+				stats[id] = &stat{}
+			}
+		case 1:
+			// Total Unerrored Codewords
+			for i, td := range cascadia.MustCompile("td").MatchAll(tr)[1:] {
+				f, err := strconv.ParseFloat(strings.Fields(getText(td))[0], 64)
+				if err != nil {
+					continue
+				}
+				stats[ids[i]].unerrored = f
+			}
+		case 2:
+			// Total Correctable Codewords
+			for i, td := range cascadia.MustCompile("td").MatchAll(tr)[1:] {
+				f, err := strconv.ParseFloat(strings.Fields(getText(td))[0], 64)
+				if err != nil {
+					continue
+				}
+				stats[ids[i]].correctable = f
+			}
+		case 3:
+			// Total Uncorrectable Codewords
+			for i, td := range cascadia.MustCompile("td").MatchAll(tr)[1:] {
+				f, err := strconv.ParseFloat(strings.Fields(getText(td))[0], 64)
+				if err != nil {
+					continue
+				}
+				stats[ids[i]].uncorrectable = f
+			}
+		default:
+			glog.Fatalf("Unhandled %d row in signal stats table", row)
+		}
+	}
+	glog.V(2).Infof("updateSignalStats data:")
+	for k, v := range stats {
+		glog.V(2).Infof("  %v: %v", k, v)
+		codewordsUnerroredMetric.WithLabelValues(k).Set(v.unerrored)
+		codewordsCorrectableMetric.WithLabelValues(k).Set(v.correctable)
+		codewordsUncorrectableMetric.WithLabelValues(k).Set(v.uncorrectable)
+	}
 }
 
 func get() error {
@@ -224,12 +300,13 @@ func get() error {
 	// a nested table in a td, which this filter excludes.
 	sel := cascadia.MustCompile("center > table")
 	for i, t := range sel.MatchAll(n) {
-		glog.Infof("Table %d %v", i, t)
 		switch i {
 		case 0:
 			updateDownstream(t)
 		case 1:
 			updateUpstream(t)
+		case 2:
+			updateSignalStats(t)
 		}
 	}
 	return nil
@@ -255,5 +332,5 @@ func main() {
 		}
 		ph.ServeHTTP(w, r)
 	}))
-	http.ListenAndServe(":"+strconv.Itoa(*port), nil)
+	glog.Fatalf("Listener returned: %v", http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }
