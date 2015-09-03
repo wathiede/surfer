@@ -1,3 +1,5 @@
+// Copyright 2015 Google.
+
 // Command surfer scrapes the signal status page of a SB6121 cable modem and
 // exports values as prometheus metrics.
 package main
@@ -211,7 +213,7 @@ func updateUpstream(n *html.Node) {
 				stats[ids[i]].modulation = strings.Replace(getText(td), "\n", " ", -1)
 			}
 		case 6:
-			// Ranging Status TODO
+			// Ranging Status
 			for i, td := range cascadia.MustCompile("td").MatchAll(tr)[1:] {
 				stats[ids[i]].rangingStatus = getText(td)
 			}
