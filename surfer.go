@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/andybalholm/cascadia"
 	"github.com/golang/glog"
@@ -300,7 +301,8 @@ func updateSignalStats(n *html.Node) {
 }
 
 func get() error {
-	resp, err := http.Get(signalURL)
+	c := http.Client{Timeout: 10 * time.Second}
+	resp, err := c.Get(signalURL)
 	if err != nil {
 		return err
 	}
