@@ -16,6 +16,9 @@
 package sb6121
 
 import (
+	"bytes"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -53,24 +56,48 @@ type upstreamStat struct {
 	powerLevel     float64
 }
 
-type sb6121 struct{}
+type sb6121 struct {
+	fakeData []byte
+}
 
+// New returns a modem.Modem that scrapes SB6121 formatted data at the default
+// URL.
 func New() modem.Modem {
 	return &sb6121{}
 }
 
-func (sb6121) Status() (*modem.Signal, error) {
+// NewFakeData returns a modem.Modem that with parse SB6121 formatted data
+// from the HTML file given in path.
+func NewFakeData(path string) (modem.Modem, error) {
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	return &sb6121{fakeData: b}, nil
+}
+
+// Status will return signal data parsed from an HTML status page.  If
+// sb.fakeData is not nil, the fake data is parsed.  If it is nil, then an
+// HTTP request is made to the default signal URL of a SB6121.
+func (sb *sb6121) Status() (*modem.Signal, error) {
+	if sb != nil {
+		return parseStatus(bytes.NewReader(sb.fakeData))
+	}
+
 	c := http.Client{Timeout: 10 * time.Second}
 	resp, err := c.Get(signalURL)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	n, err := html.Parse(resp.Body)
+	return parseStatus(resp.Body)
+}
+
+func parseStatus(r io.Reader) (*modem.Signal, error) {
+	n, err := html.Parse(r)
 	if err != nil {
 		return nil, err
 	}
-
 	signal := &modem.Signal{
 		Downstream: map[modem.Channel]*modem.Downstream{},
 		Upstream:   map[modem.Channel]*modem.Upstream{},

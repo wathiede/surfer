@@ -30,7 +30,8 @@ import (
 )
 
 var (
-	port = flag.Int("port", 6666, "port to listen on when serving prometheus metrics")
+	port         = flag.Int("port", 6666, "port to listen on when serving prometheus metrics")
+	fakeDataPath = flag.String("fake", "", "path to fake HTML data.  (default) fetch over HTTP")
 
 	downstreamSNRMetric = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "downstream_snr",
@@ -94,7 +95,16 @@ func main() {
 
 	// TODO(wathiede): probe and create other cable modems depending on content
 	// of /index.html
-	var m modem.Modem = sb6121.New()
+	var m modem.Modem
+	if *fakeDataPath != "" {
+		var err error
+		m, err = sb6121.NewFakeData(*fakeDataPath)
+		if err != nil {
+			glog.Exitf("Failed to create sb6121 with %q: %v", *fakeDataPath, err)
+		}
+	} else {
+		m = sb6121.New()
+	}
 
 	g := &singleflight.Group{}
 	ph := prometheus.Handler()
