@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Command surfer scrapes the signal status page of a SB6121 cable modem and
-// exports values as prometheus metrics.
+// Command surfer scrapes the signal status page of a SB6121 or SB6183 cable
+// modem and exports values as prometheus metrics.
 package main
 
 import (
