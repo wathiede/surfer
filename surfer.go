@@ -77,6 +77,12 @@ var (
 	},
 		[]string{"channel", "frequency_hz", "modulation", "ranging_status"},
 	)
+
+	fetchErrorsMetric = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "fetch_errors",
+		Help: "Count of errors when fetching metrics from modem.",
+	},
+	)
 )
 
 func init() {
@@ -87,6 +93,7 @@ func init() {
 	prometheus.MustRegister(codewordsUnerroredMetric)
 	prometheus.MustRegister(codewordsCorrectableMetric)
 	prometheus.MustRegister(codewordsUncorrectableMetric)
+	prometheus.MustRegister(fetchErrorsMetric)
 }
 
 func main() {
@@ -114,7 +121,7 @@ func main() {
 		if _, err := g.Do("get", func() (interface{}, error) {
 			s, err := m.Status()
 			if err != nil {
-				// TODO(wathiede): update fetch error metric
+				fetchErrorsMetric.Inc()
 				return nil, err
 			}
 			for ch, d := range s.Downstream {
