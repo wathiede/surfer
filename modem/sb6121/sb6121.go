@@ -60,6 +60,50 @@ type sb6121 struct {
 	fakeData []byte
 }
 
+func (sb6121) Name() string { return "SB6121" }
+
+func isSB6121(b []byte) bool {
+	return bytes.Contains(b, []byte(`<META content="Microsoft FrontPage 4.0" name=GENERATOR>`))
+}
+
+func probe(path string) modem.Modem {
+	if path != "" {
+		b, err := ioutil.ReadFile(path)
+		if err != nil {
+			glog.Errorf("Failed to read %q: %v", path, err)
+			return nil
+		}
+		if isSB6121(b) {
+			m, err := NewFakeData(path)
+			if err != nil {
+				glog.Errorf("Failed to create fake SB6121: %v", err)
+				return nil
+			}
+			return m
+		}
+		return nil
+	}
+	rc, err := get()
+	if err != nil {
+		glog.Errorf("Failed to get status page: %v", err)
+		return nil
+	}
+	defer rc.Close()
+	b, err := ioutil.ReadAll(io.LimitReader(rc, 1<<20))
+	if err != nil {
+		glog.Errorf("Failed to read status page: %v", err)
+		return nil
+	}
+	if isSB6121(b) {
+		return New()
+	}
+	return nil
+}
+
+func init() {
+	modem.Register(probe)
+}
+
 // New returns a modem.Modem that scrapes SB6121 formatted data at the default
 // URL.
 func New() modem.Modem {
@@ -76,21 +120,30 @@ func NewFakeData(path string) (modem.Modem, error) {
 	return &sb6121{fakeData: b}, nil
 }
 
-// Status will return signal data parsed from an HTML status page.  If
-// sb.fakeData is not nil, the fake data is parsed.  If it is nil, then an
-// HTTP request is made to the default signal URL of a SB6121.
-func (sb *sb6121) Status() (*modem.Signal, error) {
-	if sb != nil {
-		return parseStatus(bytes.NewReader(sb.fakeData))
-	}
-
+func get() (io.ReadCloser, error) {
+	glog.V(2).Infof("Start Probing %q", signalURL)
+	defer glog.V(2).Infof("Done Probing %q", signalURL)
 	c := http.Client{Timeout: 10 * time.Second}
 	resp, err := c.Get(signalURL)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
-	return parseStatus(resp.Body)
+	return resp.Body, nil
+}
+
+// Status will return signal data parsed from an HTML status page.  If
+// sb.fakeData is not nil, the fake data is parsed.  If it is nil, then an
+// HTTP request is made to the default signal URL of a SB6121.
+func (sb *sb6121) Status() (*modem.Signal, error) {
+	if sb.fakeData != nil {
+		return parseStatus(bytes.NewReader(sb.fakeData))
+	}
+	rc, err := get()
+	if err != nil {
+		return nil, err
+	}
+	defer rc.Close()
+	return parseStatus(rc)
 }
 
 func parseStatus(r io.Reader) (*modem.Signal, error) {

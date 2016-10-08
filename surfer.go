@@ -20,13 +20,15 @@ import (
 	"flag"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/golang/groupcache/singleflight"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"xinu.tv/surfer/modem"
-	"xinu.tv/surfer/modem/sb6121"
+	_ "xinu.tv/surfer/modem/sb6121"
+	_ "xinu.tv/surfer/modem/sb6183"
 )
 
 var (
@@ -81,8 +83,12 @@ var (
 	fetchErrorsMetric = prometheus.NewCounter(prometheus.CounterOpts{
 		Name: "fetch_errors",
 		Help: "Count of errors when fetching metrics from modem.",
-	},
-	)
+	})
+
+	fetchSuccessesMetric = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "fetch_successes",
+		Help: "Count of successes when fetching metrics from modem.",
+	})
 )
 
 func init() {
@@ -94,24 +100,23 @@ func init() {
 	prometheus.MustRegister(codewordsCorrectableMetric)
 	prometheus.MustRegister(codewordsUncorrectableMetric)
 	prometheus.MustRegister(fetchErrorsMetric)
+	prometheus.MustRegister(fetchSuccessesMetric)
 }
 
 func main() {
 	flag.Parse()
 	defer glog.Flush()
 
-	// TODO(wathiede): probe and create other cable modems depending on content
-	// of /index.html
 	var m modem.Modem
-	if *fakeDataPath != "" {
-		var err error
-		m, err = sb6121.NewFakeData(*fakeDataPath)
-		if err != nil {
-			glog.Exitf("Failed to create sb6121 with %q: %v", *fakeDataPath, err)
+	for {
+		m = modem.New(*fakeDataPath)
+		if m != nil {
+			break
 		}
-	} else {
-		m = sb6121.New()
+		glog.Infof("Failed to find modem, sleeping")
+		time.Sleep(5 * time.Second)
 	}
+	glog.Infof("Found modem %q", m.Name())
 
 	g := &singleflight.Group{}
 	ph := prometheus.Handler()
@@ -136,6 +141,7 @@ func main() {
 				upstreamSymbolRateMetric.WithLabelValues(string(ch), u.Frequency, u.Modulation, u.Status).Set(u.SymbolRate)
 				upstreamPowerLevelMetric.WithLabelValues(string(ch), u.Frequency, u.Modulation, u.Status).Set(u.PowerLevel)
 			}
+			fetchSuccessesMetric.Inc()
 			return nil, nil
 		}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
