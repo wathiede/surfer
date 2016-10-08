@@ -17,18 +17,25 @@
 package modem
 
 type Downstream struct {
-	Correctable   float64
-	Frequency     string
-	Modulation    string
-	PowerLevel    float64
+	Correctable float64
+	// Hz
+	Frequency  string
+	Modulation string
+	// dBmV
+	PowerLevel float64
+	// dB
 	SNR           float64
 	Uncorrectable float64
 	Unerrored     float64
+	// TODO(wathiede): status?
 }
 
 type Upstream struct {
-	Frequency  string
+	// Hz
+	Frequency string
+	// Symbols / second
 	SymbolRate float64
+	// dBmV
 	PowerLevel float64
 	Modulation string
 	Status     string
