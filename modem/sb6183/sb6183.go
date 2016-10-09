@@ -29,11 +29,10 @@ import (
 	"github.com/golang/glog"
 	"golang.org/x/net/html"
 
-	"xinu.tv/surfer/htmlutil"
-	"xinu.tv/surfer/modem"
+	"github.com/wathiede/surfer/htmlutil"
+	"github.com/wathiede/surfer/modem"
 )
 
-// TODO(wac): confirm URL.
 const signalURL = "http://192.168.100.1/"
 
 type sb6183 struct {

@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"testing"
 
-	"xinu.tv/surfer/modem"
+	"github.com/wathiede/surfer/modem"
 )
 
 func TestParseStatus(t *testing.T) {
