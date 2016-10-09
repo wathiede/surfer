@@ -26,9 +26,9 @@ import (
 	"github.com/golang/groupcache/singleflight"
 	"github.com/prometheus/client_golang/prometheus"
 
-	"xinu.tv/surfer/modem"
-	_ "xinu.tv/surfer/modem/sb6121"
-	_ "xinu.tv/surfer/modem/sb6183"
+	"github.com/wathiede/surfer/modem"
+	_ "github.com/wathiede/surfer/modem/sb6121"
+	_ "github.com/wathiede/surfer/modem/sb6183"
 )
 
 var (

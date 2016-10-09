@@ -28,8 +28,8 @@ import (
 	"github.com/golang/glog"
 	"golang.org/x/net/html"
 
-	"xinu.tv/surfer/htmlutil"
-	"xinu.tv/surfer/modem"
+	"github.com/wathiede/surfer/htmlutil"
+	"github.com/wathiede/surfer/modem"
 )
 
 const signalURL = "http://192.168.100.1/cmSignalData.htm"
