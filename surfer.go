@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"net/http"
+	_ "net/http/pprof"
 	"strconv"
 	"time"
 
