@@ -1,0 +1,4 @@
+[submodule "client_golang"]
+  path=vendor/github.com/prometheus/client_golang
+  url=https://github.com/prometheus/client_golang
+  branch=6450fc55b1a3e9b9784fbebe3d42f9ac3f7cf2e6
