@@ -16,6 +16,8 @@
 // scrapers will support.
 package modem
 
+import "context"
+
 type Downstream struct {
 	Correctable float64
 	// Hz
@@ -50,31 +52,36 @@ type Signal struct {
 
 type Modem interface {
 	Name() string
-	Status() (*Signal, error)
+	// Fetch the status of the modem using implementation specific means.  The
+	// context.Context passed in can be used to set timeouts or cancel
+	// in-progress requests.
+	Status(context.Context) (*Signal, error)
 }
 
 // NewFunc is registered to determine if a given Modem is available for
 // parsing.
+// The ctx is used when making any requests.
 // Path is optional, if it is empty, implementations should probe their
 // configured URL.  If it is non-empty, the contents of the file should be
 // used to determine if it is a status page for the given Modem
 // implementation.
 // Implementations should return nil if path or the default URL do not
 // contain expected results.
-type NewFunc func(path string) Modem
+type NewFunc func(ctx context.Context, path string) Modem
 
 var modems []NewFunc
 
 // New will walk the list of registered cable modems, and returns an instance
 // if any probers return successful.  Nil is returned if no probers succeed.
+// The ctx is used when making any requests.
 // Path is optional, if it is empty, implementations should probe their
 // configured URL.  If it is non-empty, the contents of the file should be
 // used to determine if it is a status page for the given Modem
 // implementation.
-func New(path string) Modem {
+func New(ctx context.Context, path string) Modem {
 	// TODO(wathiede): run in parallel and take the first that succeeds?
 	for _, f := range modems {
-		m := f(path)
+		m := f(ctx, path)
 		if m != nil {
 			return m
 		}

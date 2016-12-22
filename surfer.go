@@ -17,6 +17,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"net/http"
 	_ "net/http/pprof"
@@ -108,9 +109,12 @@ func main() {
 	flag.Parse()
 	defer glog.Flush()
 
+	ctx := context.Background()
 	var m modem.Modem
 	for {
-		m = modem.New(*fakeDataPath)
+		ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+		m = modem.New(ctx, *fakeDataPath)
+		cancel()
 		if m != nil {
 			break
 		}
@@ -125,7 +129,9 @@ func main() {
 	http.Handle("/metrics", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Only make one query to the cable modem if concurrent requests come in.
 		if _, err := g.Do("get", func() (interface{}, error) {
-			s, err := m.Status()
+			ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+			defer cancel()
+			s, err := m.Status(ctx)
 			if err != nil {
 				fetchErrorsMetric.Inc()
 				return nil, err
