@@ -35,6 +35,7 @@ import (
 
 var (
 	port         = flag.Int("port", 6666, "port to listen on when serving prometheus metrics")
+	timeout      = flag.Duration("timeout", 1*time.Second, "timeout for HTTP get to cable modem")
 	fakeDataPath = flag.String("fake", "", "path to fake HTML data.  (default) fetch over HTTP")
 
 	downstreamSNRMetric = prometheus.NewGaugeVec(prometheus.GaugeOpts{
@@ -112,7 +113,7 @@ func main() {
 	ctx := context.Background()
 	var m modem.Modem
 	for {
-		ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+		ctx, cancel := context.WithTimeout(ctx, *timeout)
 		m = modem.New(ctx, *fakeDataPath)
 		cancel()
 		if m != nil {
