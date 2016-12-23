@@ -130,7 +130,7 @@ func main() {
 	http.Handle("/metrics", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Only make one query to the cable modem if concurrent requests come in.
 		if _, err := g.Do("get", func() (interface{}, error) {
-			ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+			ctx, cancel := context.WithTimeout(ctx, *timeout)
 			defer cancel()
 			s, err := m.Status(ctx)
 			if err != nil {
