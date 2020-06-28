@@ -90,7 +90,7 @@ func New() modem.Modem {
 	return &sb6183{}
 }
 
-// NewFakeData returns a modem.Modem that with parse SB6183 formatted data
+// NewFakeData returns a modem.Modem that will parse SB6183 formatted data
 // from the HTML file given in path.
 func NewFakeData(path string) (modem.Modem, error) {
 	b, err := ioutil.ReadFile(path)
