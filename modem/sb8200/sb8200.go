@@ -1,4 +1,4 @@
-// Copyright 2016 Google Inc. All Rights Reserved.
+// Copyright 2020 Google Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ func New() modem.Modem {
 	return &sb8200{}
 }
 
-// NewFakeData returns a modem.Modem that with parse SB8200 formatted data
+// NewFakeData returns a modem.Modem that will parse SB8200 formatted data
 // from the HTML file given in path.
 func NewFakeData(path string) (modem.Modem, error) {
 	b, err := ioutil.ReadFile(path)
