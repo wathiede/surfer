@@ -1,4 +1,4 @@
-module xinu.tv/surfer
+module github.com/wathiede/surfer
 
 go 1.12
 
@@ -12,7 +12,6 @@ require (
 	github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90 // indirect
 	github.com/prometheus/common v0.4.1 // indirect
 	github.com/prometheus/procfs v0.0.0-20190528151240-3cb620ac02d0 // indirect
-	github.com/wathiede/surfer v0.0.0-20170716220928-7a38cd99e40c
 	golang.org/x/net v0.0.0-20190522155817-f3200d17e092
 )
 
