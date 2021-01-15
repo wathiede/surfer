@@ -45,7 +45,7 @@ func isSB6183(b []byte) bool {
 	return bytes.Contains(b, []byte(`<span id="thisModelNumberIs">SB6183</span>`))
 }
 
-func probe(ctx context.Context, path string) modem.Modem {
+func probe(ctx context.Context, client http.Client, path string) modem.Modem {
 	if path != "" {
 		b, err := ioutil.ReadFile(path)
 		if err != nil {
@@ -63,7 +63,7 @@ func probe(ctx context.Context, path string) modem.Modem {
 		return nil
 	}
 	glog.Infof("Probing %q", signalURL)
-	rc, err := get(ctx)
+	rc, err := get(ctx, client)
 	if err != nil {
 		glog.Errorf("Failed to get status page: %v", err)
 		return nil
@@ -100,13 +100,13 @@ func NewFakeData(path string) (modem.Modem, error) {
 	return &sb6183{fakeData: b}, nil
 }
 
-func get(ctx context.Context) (io.ReadCloser, error) {
+func get(ctx context.Context, client http.Client) (io.ReadCloser, error) {
 	req, err := http.NewRequest("GET", signalURL, nil)
 	if err != nil {
 		return nil, err
 	}
 	req = req.WithContext(ctx)
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -116,12 +116,12 @@ func get(ctx context.Context) (io.ReadCloser, error) {
 // Status will return signal data parsed from an HTML status page.  If
 // sb.fakeData is not nil, the fake data is parsed.  If it is nil, then an
 // HTTP request is made to the default signal URL of a SB6183.
-func (sb *sb6183) Status(ctx context.Context) (*modem.Signal, error) {
+func (sb *sb6183) Status(ctx context.Context, client http.Client) (*modem.Signal, error) {
 	if sb.fakeData != nil {
 		return parseStatus(bytes.NewReader(sb.fakeData))
 	}
 
-	rc, err := get(ctx)
+	rc, err := get(ctx, client)
 	if err != nil {
 		return nil, err
 	}

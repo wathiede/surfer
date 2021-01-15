@@ -16,7 +16,10 @@
 // scrapers will support.
 package modem
 
-import "context"
+import (
+	"context"
+	"net/http"
+)
 
 type Downstream struct {
 	Correctable float64
@@ -55,7 +58,7 @@ type Modem interface {
 	// Fetch the status of the modem using implementation specific means.  The
 	// context.Context passed in can be used to set timeouts or cancel
 	// in-progress requests.
-	Status(context.Context) (*Signal, error)
+	Status(context.Context, http.Client) (*Signal, error)
 }
 
 // NewFunc is registered to determine if a given Modem is available for
@@ -67,7 +70,7 @@ type Modem interface {
 // implementation.
 // Implementations should return nil if path or the default URL do not
 // contain expected results.
-type NewFunc func(ctx context.Context, path string) Modem
+type NewFunc func(ctx context.Context, client http.Client, path string) Modem
 
 var modems []NewFunc
 
@@ -78,10 +81,10 @@ var modems []NewFunc
 // configured URL.  If it is non-empty, the contents of the file should be
 // used to determine if it is a status page for the given Modem
 // implementation.
-func New(ctx context.Context, path string) Modem {
+func New(ctx context.Context, client http.Client, path string) Modem {
 	// TODO(wathiede): run in parallel and take the first that succeeds?
 	for _, f := range modems {
-		m := f(ctx, path)
+		m := f(ctx, client, path)
 		if m != nil {
 			return m
 		}
