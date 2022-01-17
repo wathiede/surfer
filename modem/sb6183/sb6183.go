@@ -181,7 +181,7 @@ func parseDownstreamTable(n *html.Node) (map[modem.Channel]*modem.Downstream, er
 				// Channel ID
 			case 4:
 				// Frequency (Hz)
-				d.Frequency = v
+				d.Frequency = strings.TrimSuffix(v, " Hz")
 			case 5:
 				// Power (dBmV)
 				d.PowerLevel = f
@@ -236,7 +236,7 @@ func parseUpstreamTable(n *html.Node) (map[modem.Channel]*modem.Upstream, error)
 				u.SymbolRate = f * 1000
 			case 5:
 				// Frequency (Hz)
-				u.Frequency = v
+				u.Frequency = strings.TrimSuffix(v, " Hz")
 			case 6:
 				// Power (dBmV)
 				u.PowerLevel = f
