@@ -1,5 +1,12 @@
-FROM registry.z.xinu.tv/golang/alpine/onbuild AS base
-FROM alpine
+FROM golang:alpine
 
-COPY --from=base /go/bin/app /bin/surfer
-COPY --from=base /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+WORKDIR /usr/src/app
+
+# pre-copy/cache go.mod for pre-downloading dependencies and only redownloading them in subsequent builds if they change
+COPY go.mod go.sum ./
+COPY vendor/github.com/prometheus/client_golang/go.mod  ./vendor/github.com/prometheus/client_golang/
+#COPY  vendor/github.com/prometheus/client_golang/go.sum ./vendor/github.com/prometheus/client_golang/
+RUN go mod download && go mod verify
+
+COPY . .
+RUN go build -v -o /usr/local/bin/ ./...
