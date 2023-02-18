@@ -32,6 +32,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/golang/groupcache/singleflight"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/wathiede/surfer/modem"
 	_ "github.com/wathiede/surfer/modem/sb6121"
@@ -58,19 +59,19 @@ var (
 		[]string{"channel", "frequency_hz", "modulation"},
 	)
 
-	codewordsUnerroredMetric = prometheus.NewCounterVec(prometheus.CounterOpts{
+	codewordsUnerroredMetric = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "codewords_unerrored",
 		Help: "Unerrored codeword count",
 	},
 		[]string{"channel"},
 	)
-	codewordsCorrectableMetric = prometheus.NewCounterVec(prometheus.CounterOpts{
+	codewordsCorrectableMetric = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "codewords_correctable",
 		Help: "Correctable codeword count",
 	},
 		[]string{"channel"},
 	)
-	codewordsUncorrectableMetric = prometheus.NewCounterVec(prometheus.CounterOpts{
+	codewordsUncorrectableMetric = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "codewords_uncorrectable",
 		Help: "Uncorrectable codeword count",
 	},
@@ -90,12 +91,12 @@ var (
 		[]string{"channel", "frequency_hz", "modulation", "ranging_status"},
 	)
 
-	fetchErrorsMetric = prometheus.NewCounter(prometheus.CounterOpts{
+	fetchErrorsMetric = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "fetch_errors",
 		Help: "Count of errors when fetching metrics from modem.",
 	})
 
-	fetchSuccessesMetric = prometheus.NewCounter(prometheus.CounterOpts{
+	fetchSuccessesMetric = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "fetch_successes",
 		Help: "Count of successes when fetching metrics from modem.",
 	})
@@ -140,7 +141,7 @@ func main() {
 	glog.Infof("Found modem %q", m.Name())
 
 	g := &singleflight.Group{}
-	ph := prometheus.Handler()
+	ph := promhttp.Handler()
 	// Refresh data every prometheus poll.
 	http.Handle("/metrics", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Only make one query to the cable modem if concurrent requests come in.
