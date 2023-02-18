@@ -44,7 +44,7 @@ func TestParseStatus(t *testing.T) {
 		Downstream: map[modem.Channel]*modem.Downstream{
 			"1": {
 				Correctable:   0,
-				Frequency:     "555000000 Hz",
+				Frequency:     "555000000",
 				Modulation:    "QAM256",
 				PowerLevel:    6.3,
 				SNR:           38.4,
@@ -53,7 +53,7 @@ func TestParseStatus(t *testing.T) {
 			},
 			"10": {
 				Correctable:   0,
-				Frequency:     "609000000 Hz",
+				Frequency:     "609000000",
 				Modulation:    "QAM256",
 				PowerLevel:    3.7,
 				SNR:           37.1,
@@ -62,7 +62,7 @@ func TestParseStatus(t *testing.T) {
 			},
 			"11": {
 				Correctable:   3,
-				Frequency:     "615000000 Hz",
+				Frequency:     "615000000",
 				Modulation:    "QAM256",
 				PowerLevel:    3.5,
 				SNR:           37,
@@ -71,7 +71,7 @@ func TestParseStatus(t *testing.T) {
 			},
 			"12": {
 				Correctable:   3,
-				Frequency:     "621000000 Hz",
+				Frequency:     "621000000",
 				Modulation:    "QAM256",
 				PowerLevel:    3.2,
 				SNR:           36.9,
@@ -80,7 +80,7 @@ func TestParseStatus(t *testing.T) {
 			},
 			"13": {
 				Correctable:   5,
-				Frequency:     "627000000 Hz",
+				Frequency:     "627000000",
 				Modulation:    "QAM256",
 				PowerLevel:    3.1,
 				SNR:           36.7,
@@ -89,7 +89,7 @@ func TestParseStatus(t *testing.T) {
 			},
 			"14": {
 				Correctable:   10,
-				Frequency:     "633000000 Hz",
+				Frequency:     "633000000",
 				Modulation:    "QAM256",
 				PowerLevel:    3,
 				SNR:           36.7,
@@ -98,7 +98,7 @@ func TestParseStatus(t *testing.T) {
 			},
 			"15": {
 				Correctable:   8,
-				Frequency:     "639000000 Hz",
+				Frequency:     "639000000",
 				Modulation:    "QAM256",
 				PowerLevel:    3,
 				SNR:           36.6,
@@ -107,7 +107,7 @@ func TestParseStatus(t *testing.T) {
 			},
 			"16": {
 				Correctable:   7,
-				Frequency:     "645000000 Hz",
+				Frequency:     "645000000",
 				Modulation:    "QAM256",
 				PowerLevel:    3,
 				SNR:           36.7,
@@ -116,7 +116,7 @@ func TestParseStatus(t *testing.T) {
 			},
 			"2": {
 				Correctable:   0,
-				Frequency:     "561000000 Hz",
+				Frequency:     "561000000",
 				Modulation:    "QAM256",
 				PowerLevel:    5.8,
 				SNR:           38.4,
@@ -125,7 +125,7 @@ func TestParseStatus(t *testing.T) {
 			},
 			"3": {
 				Correctable:   0,
-				Frequency:     "567000000 Hz",
+				Frequency:     "567000000",
 				Modulation:    "QAM256",
 				PowerLevel:    5.5,
 				SNR:           38.3,
@@ -134,7 +134,7 @@ func TestParseStatus(t *testing.T) {
 			},
 			"4": {
 				Correctable:   0,
-				Frequency:     "573000000 Hz",
+				Frequency:     "573000000",
 				Modulation:    "QAM256",
 				PowerLevel:    5.5,
 				SNR:           38.2,
@@ -143,7 +143,7 @@ func TestParseStatus(t *testing.T) {
 			},
 			"5": {
 				Correctable:   0,
-				Frequency:     "579000000 Hz",
+				Frequency:     "579000000",
 				Modulation:    "QAM256",
 				PowerLevel:    5.1,
 				SNR:           38,
@@ -152,7 +152,7 @@ func TestParseStatus(t *testing.T) {
 			},
 			"6": {
 				Correctable:   0,
-				Frequency:     "585000000 Hz",
+				Frequency:     "585000000",
 				Modulation:    "QAM256",
 				PowerLevel:    4.8,
 				SNR:           37.7,
@@ -161,7 +161,7 @@ func TestParseStatus(t *testing.T) {
 			},
 			"7": {
 				Correctable:   0,
-				Frequency:     "591000000 Hz",
+				Frequency:     "591000000",
 				Modulation:    "QAM256",
 				PowerLevel:    4.6,
 				SNR:           37.5,
@@ -170,7 +170,7 @@ func TestParseStatus(t *testing.T) {
 			},
 			"8": {
 				Correctable:   0,
-				Frequency:     "597000000 Hz",
+				Frequency:     "597000000",
 				Modulation:    "QAM256",
 				PowerLevel:    4.2,
 				SNR:           37.3,
@@ -179,7 +179,7 @@ func TestParseStatus(t *testing.T) {
 			},
 			"9": {
 				Correctable:   3,
-				Frequency:     "603000000 Hz",
+				Frequency:     "603000000",
 				Modulation:    "QAM256",
 				PowerLevel:    3.9,
 				SNR:           37.2,
@@ -189,28 +189,28 @@ func TestParseStatus(t *testing.T) {
 		},
 		Upstream: map[modem.Channel]*modem.Upstream{
 			"1": {
-				Frequency:  "36500000 Hz",
+				Frequency:  "36500000",
 				SymbolRate: 5.12e+06,
 				PowerLevel: 36,
 				Modulation: "ATDMA",
 				Status:     "Locked",
 			},
 			"2": {
-				Frequency:  "30100000 Hz",
+				Frequency:  "30100000",
 				SymbolRate: 5.12e+06,
 				PowerLevel: 35.5,
 				Modulation: "ATDMA",
 				Status:     "Locked",
 			},
 			"3": {
-				Frequency:  "18900000 Hz",
+				Frequency:  "18900000",
 				SymbolRate: 2.56e+06,
 				PowerLevel: 33,
 				Modulation: "ATDMA",
 				Status:     "Locked",
 			},
 			"4": {
-				Frequency:  "23700000 Hz",
+				Frequency:  "23700000",
 				SymbolRate: 5.12e+06,
 				PowerLevel: 33.5,
 				Modulation: "ATDMA",
