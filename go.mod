@@ -9,5 +9,5 @@ require (
 	github.com/prometheus/client_golang v1.14.0
 	github.com/prometheus/common v0.39.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
-	golang.org/x/net v0.7.0
+	golang.org/x/net v0.33.0
 )
